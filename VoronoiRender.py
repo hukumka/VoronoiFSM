@@ -16,7 +16,7 @@ from random import randint, uniform
 
 from itertools_recipe import pairwise_looped, pairwise
 
-from Rule import rule
+from Hunt import rule, generator
 
 
 class VoronoiRenderWidget(QGLWidget):
@@ -89,12 +89,12 @@ class VoronoiRenderWidget(QGLWidget):
 
     def __get_color(self, state):
         colors = [[0, 0, 0],
+                  [0.2, 0, 0],
+                  [0.4, 0, 0],
+                  [0.6, 0, 0],
+                  [0.8, 0, 0],
                   [1, 0, 0],
-                  [0, 1, 0],
-                  [0, 0, 1],
-                  [1, 1, 0],
-                  [0, 1, 1],
-                  [1, 0, 1]]
+                  [0.2, 0.5, 0.5]]
         return colors[state]
 
 
@@ -159,6 +159,7 @@ if __name__ == '__main__':
 
     voronoi = Voronoi(points)
     voronoi_data = VoronoiData(voronoi)
+    voronoi_data.generate_state(generator)
 
     window = VoronoiRenderWidget(voronoi_data)
     window.showFullScreen()

@@ -55,3 +55,17 @@ class VoronoiData:
 
         for cell in self._points:
             cell.state = cell._new_state
+    
+    
+    def change_closest(self, x, y):
+        point = self.find_closest(x, y)
+        point.state += 1
+        point.state %= 3
+
+    def find_closest(self, x, y):
+        # naive
+        vect = Vect2(x, y)
+        dppi = ((abs(vect - p), p) for p in self._points)
+        return min(dppi, key=lambda x: x[0])[1]
+
+
