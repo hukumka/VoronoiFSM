@@ -2,8 +2,15 @@ class Node:
     EMPTY = 0
     WOLF = 1
     SHEEP = 2
+
     def __init__(self, state=Node.EMPTY):
         self.state = state
+        self.neighbors = []
+
+    def append_neighbor(self, neighbor):
+        self.neighbors.append(neighbor)
+
+
 
 
 def rule(state, neighbors):

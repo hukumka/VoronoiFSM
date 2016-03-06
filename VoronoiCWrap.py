@@ -45,7 +45,7 @@ class Voronoi:
                 self._neighbors[point] = []
                 neighbors_count = voronoi_lib.getNeighborsCount(voronoi_obj, i)
                 for j in range(neighbors_count):
-                    neighbor_point = point_list[voronoi_lib.getNeighbor(voronoi_obj, i, j)]
+                    neighbor_point = voronoi_lib.getNeighbor(voronoi_obj, i, j)
                     self._neighbors[point].append(neighbor_point)
 
         self.__calc_points();

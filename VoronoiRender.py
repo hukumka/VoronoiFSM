@@ -8,53 +8,61 @@ from PyQt5.QtOpenGL import *
 
 
 from VoronoiCWrap import Voronoi
+from VoronoiData import VoronoiData
 from Vector import Vect2
 
 from random import randint, uniform
 
 
+from itertools_recipe import pairwise_looped, pairwise
+
+from Rule import rule
+
+
 class VoronoiRenderWidget(QGLWidget):
-    def __init__(self, voronoi, parent=None):
+    def __init__(self, voronoi_data, parent=None):
         assert isinstance(voronoi, Voronoi)
 
         QGLWidget.__init__(self, parent)
-        self.voronoi = voronoi
+        self.voronoi = voronoi_data
 
         # points will need to view points
-        self.__points = []
-        for p in voronoi._points:
-            self.__points.append([p.x, p.y])
+        points = []
+        lines = []
+        triangles = []
 
-        # same for lines
-        self.__lines = []
-        for _, linelist in voronoi._lines.items():
-            for p1, p2 in linelist:
-                self.__lines.append([p1.x, p1.y])
-                self.__lines.append([p2.x, p2.y])
+        for p in self.voronoi._points:
+            # points
+            points.append([p.x, p.y])
 
-        # triagles need to colorise it
-        self.__triangles = []
-        for _, points in voronoi._line_points.items():
-            p1 = points[0]
-            for i in range(1, len(points)-1):
-                p2 = points[i]
-                p3 = points[i+1]
+            # lines
+            for p1, p2 in pairwise_looped(p.polygone):
+                lines.append([p1.x, p1.y])
+                lines.append([p2.x, p2.y])
 
-                self.__triangles.append([p1.x, p1.y])
-                self.__triangles.append([p2.x, p2.y])
-                self.__triangles.append([p3.x, p3.y])
+            # triagles (for colorise)
+            poly = iter(p.polygone)
+            p1 = next(poly, None)
+            if p1 is not None:
+                for p2, p3 in pairwise(poly):
+                    triangles.append([p1.x, p1.y])
+                    triangles.append([p2.x, p2.y])
+                    triangles.append([p3.x, p3.y])
 
-        self.__color_list = [[0.0, 0.0, 0] for _ in self.__triangles]
+        self.__color_list = [[0.0, 0.0, 0] for _ in triangles]
 
         self.__reload_colors();
 
-        self.__vertex_buffer = self.__triangles + self.__lines + self.__points
+        self.__vertex_buffer = triangles + lines + points
+        self.__triangles_count = len(triangles)
+        self.__lines_count = len(lines)
+        self.__points_count = len(points)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.evalute)
 
     def evalute(self):
-        self.voronoi.update()
+        self.voronoi.update(rule)
         self.update()
 
     def update(self):
@@ -64,21 +72,30 @@ class VoronoiRenderWidget(QGLWidget):
 
 
     def __reload_colors(self):
-
         triangle_id = 0
-        for center_point, points in self.voronoi._line_points.items():
+        for point in self.voronoi._points:
             red = uniform(0.0, 0.5)
             green = uniform(0.0, 0.5)
             blue = uniform(0.0, 0.5)
-            triangles_count = len(points) - 2
+            triangles_count = len(point.polygone) - 2
             if triangles_count <= 0:
                 continue
             else:
                 for i in range(triangles_count):
                     for j in range(3):
                         index = (triangle_id + i) * 3 + j
-                        self.__color_list[index] = self.voronoi.get_color(center_point)
+                        self.__color_list[index] = self.__get_color(point.state)
                 triangle_id += triangles_count
+
+    def __get_color(self, state):
+        colors = [[0, 0, 0],
+                  [1, 0, 0],
+                  [0, 1, 0],
+                  [0, 0, 1],
+                  [1, 1, 0],
+                  [0, 1, 1],
+                  [1, 0, 1]]
+        return colors[state]
 
 
     def paintGL(self):
@@ -90,13 +107,13 @@ class VoronoiRenderWidget(QGLWidget):
 
         glEnableClientState(GL_COLOR_ARRAY)
 
-        glDrawArrays(GL_TRIANGLES, 0, len(self.__triangles))
+        glDrawArrays(GL_TRIANGLES, 0, self.__triangles_count)
         glDisableClientState(GL_COLOR_ARRAY)
 
-        glDrawArrays(GL_LINES, len(self.__triangles), len(self.__lines))
+        glDrawArrays(GL_LINES, self.__triangles_count, self.__lines_count)
 
         glPointSize(2.0)
-        glDrawArrays(GL_POINTS, len(self.__triangles) + len(self.__lines), len(self.__points))
+        glDrawArrays(GL_POINTS, self.__triangles_count + self.__lines_count, self.__points_count)
         glFlush()
 
     def initializeGL(self):
@@ -141,8 +158,9 @@ if __name__ == '__main__':
     #points = [Vect2(100, 100), Vect2(400, 100), Vect2(100, 400)]
 
     voronoi = Voronoi(points)
+    voronoi_data = VoronoiData(voronoi)
 
-    window = VoronoiRenderWidget(voronoi)
+    window = VoronoiRenderWidget(voronoi_data)
     window.showFullScreen()
 
     exit(app.exec_())

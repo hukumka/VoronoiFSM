@@ -1,11 +1,13 @@
-from VoronoiCWrap import Voronoi
+from Vector import Vect2
+from math import atan2
+from random import randint
 
 
 class Cell(Vect2):
     def __init__(self, x, y):
         Vect2.__init__(self, x, y)
         self.neighbors = []
-        self.lines = []
+        self.polygone = []
         self.state = None
 
 
@@ -21,8 +23,10 @@ class VoronoiData:
         self._points = [Cell(i.x, i.y) for i in voronoi._points]
 
         for point in self._points:
-            self.set_neighbors(point, voronoi)
-            self.set_lines(point, voronoi)
+            self._set_neighbors(point, voronoi)
+            self._set_lines(point, voronoi)
+
+        self.generate_state()
 
     def _set_neighbors(self, point, voronoi):
         neighbors = voronoi._neighbors[point]
@@ -31,7 +35,15 @@ class VoronoiData:
             point.neighbors.append(neighbor)
 
     def _set_lines(self, point, voronoi):
-        point.lines = voronoi._lines[point]
+        point_set = set()
+        for p1, p2 in voronoi._lines[point]:
+            point_set.add(p1)
+            point_set.add(p2)
+
+        def angle(p):
+            return atan2(p.y - point.y, p.x - point.x)
+        point.polygone = sorted(list(point_set), key=angle)
+
 
     def generate_state(self, state_generator=standart_generator):
         for cell in self._points:

@@ -1,7 +1,15 @@
+def rule(point):
+    SHEEP = 2 # green
+    WOLF = 1 # red
 
-def rule(state, neighbors):
-    red_neighbors_count = sum(filter(lambda x: x==1, neighbors))
-    green_neighbors_count = sum(filter(lambda x: x==2, neighbors))
+    neighbors = point.neighbors
+    state = point.state
+
+    def iter_len(iterable):
+        return sum(1 for _ in iterable)
+    
+    red_neighbors_count = iter_len(filter(lambda x: x.state==1, neighbors))
+    green_neighbors_count = iter_len(filter(lambda x: x.state==2, neighbors))
 
     if state == 1:
         if red_neighbors_count == 3 and green_neighbors_count <= 1:
