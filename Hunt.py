@@ -13,9 +13,17 @@ def generator(point):
         return randint(0, 2) * randint(0, 1)
 
 
+def precalculation1(point):
+    point.wolfs_count = wolfs_count(point)
+    point.empty_count = empty_count(point)
+    point.sheeps_count = sheeps_count(point)
+
+def precalculation2(point):
+    point.surrounded_sheeps_count = count_of_surrounded_sheeps(point)
+
 def rule(point):
     if is_sheep(point):
-        if wolfs_count(point) == 0:
+        if point.wolfs_count == 0:
             return SHEEP
         elif is_surrounded_by_wolfs(point):
             return EMPTY
@@ -23,15 +31,15 @@ def rule(point):
             return WOLF_HUNGRY
 
     elif is_wolf(point):
-        if count_of_surrounded_sheeps(point) >= 1:
+        if point.surrounded_sheeps_count >= 1:
             return WOLF
         else:
             return point.state - 1
 
     else:
-        if count_of_surrounded_sheeps(point) >= 1 and wolfs_count(point) >= 2:
+        if point.surrounded_sheeps_count >= 1 and point.wolfs_count >= 2:
             return WOLF
-        elif sheeps_count(point) >= 1 and wolfs_count(point) == 0:
+        elif point.sheeps_count >= 1 and point.wolfs_count == 0:
             return SHEEP
         else:
             return EMPTY
@@ -45,9 +53,9 @@ def count_of_surrounded_sheeps(point):
     return ilen(filter(surrounded_sheep, point.neighbors))
 
 def is_surrounded_by_wolfs(point):
-    empty = empty_count(point)
-    wolfs = wolfs_count(point)
-    return empty <= wolfs
+    empty = point.empty_count
+    wolfs = point.wolfs_count
+    return empty * 2 <= wolfs
 
 def empty_count(point):
     return ilen(filter(lambda x: x.state == EMPTY, point.neighbors))

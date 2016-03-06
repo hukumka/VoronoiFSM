@@ -49,7 +49,11 @@ class VoronoiData:
         for cell in self._points:
             cell.state = state_generator(cell)
 
-    def update(self, rule):
+    def update(self, rule, precalculations):
+        for precalc in precalculations:
+            for cell in self._points:
+                precalc(cell)
+
         for cell in self._points:
             cell._new_state = rule(cell)
 
