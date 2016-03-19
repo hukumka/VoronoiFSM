@@ -4,14 +4,16 @@ from PyQt5.QtCore import QTimer
 from OpenGL.GL import *  # NOQA
 from OpenGL.GLU import *  # NOQA
 from PyQt5.QtOpenGL import QGLWidget
-import numpy
 from itertools_recipe import pairwise_looped, pairwise
 
-from ctypes import Structure, c_int
+from ctypes import Structure, c_int, c_float, cdll
+
+
+ReloadColorDll = cdll.LoadLibrary('./libreloadcolors.so')
 
 
 class CellColor(Structure):
-    _fields_ = [("triagngleCount", c_int),
+    _fields_ = [("triangleCount", c_int),
                 ("state", c_int)]
 
 
@@ -47,28 +49,27 @@ class VoronoiRenderWidget(QGLWidget):
                     triangles.append([p2.x, p2.y])
                     triangles.append([p3.x, p3.y])
 
-        self.__init_color_cells()
-
         self.__vertex_buffer = triangles + lines + points
         self.__triangles_count = len(triangles)
         self.__lines_count = len(lines)
         self.__points_count = len(points)
 
+        self.__init_color_cells()
         self.__init_color_vbo()
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.evalute)
 
     def __init_color_cells(self):
-        CellsArray = CellColor * self.__points.count
-        self.__color_sells = CellsArray()
+        CellsArray = CellColor * self.__points_count
+        self.__color_cells = CellsArray()
         for i, point in enumerate(self.voronoi._points):
-            self.__color_sells[i].trianglesCount = len(point.neighbors) - 2
-            self.__color_sells[i].state = point.state
+            self.__color_cells[i].triangleCount = len(point.polygone) - 2
+            self.__color_cells[i].state = point.state
 
     def __reload_color_cells(self):
         for i, point in enumerate(self.voronoi._points):
-            self.__color_sells[i].state = point.state
+            self.__color_cells[i].state = point.state
 
     def evalute(self):
         self.voronoi.update()
@@ -76,26 +77,18 @@ class VoronoiRenderWidget(QGLWidget):
 
     def update(self):
         self.__reload_colors()
-        glColorPointerf(self.__colors)
+        glColorPointer(3, GL_FLOAT, 0, self.__colors)
         QGLWidget.update(self)
 
     def __init_color_vbo(self):
-        colors = [[0, 0, 0]] * (self.__triangles_count)
-        self.__colors = numpy.array(colors, 'f')
+        ColorArray = c_float*(self.__triangles_count*3)
+        self.__colors = ColorArray()
         self.__reload_colors()
 
     def __reload_colors(self):
-        triangle_id = 0
-        for point in self.voronoi._points:
-            triangles_count = len(point.polygone) - 2
-            if triangles_count <= 0:
-                continue
-            else:
-                color = self.__get_color(point.state)
-                for i in range(triangles_count*3):
-                    index = (triangle_id) * 3 + i
-                    self.__colors[index] = color
-                triangle_id += triangles_count
+        self.__reload_color_cells()
+        ReloadColorDll.reloadColors(self.__color_cells, len(self.__color_cells),
+                                    self.__colors)
 
     def __get_color(self, state):
         return self.__CELL_COLORS[state]
@@ -123,7 +116,7 @@ class VoronoiRenderWidget(QGLWidget):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClearDepth(1.0)
         glVertexPointerf(self.__vertex_buffer)
-        glColorPointerf(self.__colors)
+        glColorPointer(3, GL_FLOAT, 0, self.__colors)
 
     def resizeGL(self, width, height):
         glViewport(0, 0, width, height)

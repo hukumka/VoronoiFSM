@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from Vector import Vect2 as Vect
 from random import randint
 
