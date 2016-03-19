@@ -3,6 +3,13 @@ from Vector import Vect2
 from ctypes import cdll
 from ctypes import c_double
 
+from contextlib import contextmanager
+
+from math import atan2
+from random import randint
+
+from Rule import rule
+
 voronoi_lib = cdll.LoadLibrary("./libvoronoi.so")
 
 
@@ -10,14 +17,6 @@ voronoi_lib.getLineP1X.restype = c_double
 voronoi_lib.getLineP1Y.restype = c_double
 voronoi_lib.getLineP2X.restype = c_double
 voronoi_lib.getLineP2Y.restype = c_double
-
-
-from contextlib import contextmanager
-
-from math import atan2
-from random import randint
-
-from Rule import rule
 
 
 class Voronoi:
@@ -32,11 +31,11 @@ class Voronoi:
                 # load lines
                 line_count = voronoi_lib.getLinesCount(voronoi_obj, i)
                 for j in range(line_count):
-                    p1x = voronoi_lib.getLineP1X(voronoi_obj, i, j);
-                    p1y = voronoi_lib.getLineP1Y(voronoi_obj, i, j);
-                    p2x = voronoi_lib.getLineP2X(voronoi_obj, i, j);
-                    p2y = voronoi_lib.getLineP2Y(voronoi_obj, i, j);
-                
+                    p1x = voronoi_lib.getLineP1X(voronoi_obj, i, j)
+                    p1y = voronoi_lib.getLineP1Y(voronoi_obj, i, j)
+                    p2x = voronoi_lib.getLineP2X(voronoi_obj, i, j)
+                    p2y = voronoi_lib.getLineP2Y(voronoi_obj, i, j)
+
                     p1 = Vect2(p1x, p1y)
                     p2 = Vect2(p2x, p2y)
 
@@ -48,7 +47,7 @@ class Voronoi:
                     neighbor_point = voronoi_lib.getNeighbor(voronoi_obj, i, j)
                     self._neighbors[point].append(neighbor_point)
 
-        self.__calc_points();
+        self.__calc_points()
         self._state = {}
         self._swap_state = {}
         for p, _ in self._neighbors.items():
@@ -74,18 +73,6 @@ class Voronoi:
 
         self._swap_state, self._state = self._state, self._swap_state
 
-
-    def get_color(self, point):
-        colors = [[0, 0, 0],
-                  [1, 0, 0],
-                  [0, 1, 0],
-                  [0, 0, 1],
-                  [1, 1, 0],
-                  [0, 1, 1],
-                  [1, 0, 1]]
-        return colors[self._state[point]]
-
-
     @contextmanager
     def __init_voronoi(self, point_list):
         try:
@@ -95,7 +82,7 @@ class Voronoi:
             yield self.voronoi_obj
         finally:
             voronoi_lib.freeVoronoi(self.voronoi_obj)
-    
+
     @staticmethod
     def __line_list(point_list):
         """ transform list of vect2 to list of float """
@@ -106,7 +93,6 @@ class Voronoi:
 
         return l
 
-    
 
 def random_voronoi(width, height, count):
     points = [Vect2(randint(0, width), randint(0, height)) for _ in range(count)]

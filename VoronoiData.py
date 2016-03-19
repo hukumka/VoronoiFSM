@@ -26,6 +26,8 @@ class VoronoiData:
             self._set_neighbors(point, voronoi)
             self._set_lines(point, voronoi)
 
+        self.__rule = None
+        self.__precalculations = None
         self.generate_state()
 
     def _set_neighbors(self, point, voronoi):
@@ -44,12 +46,24 @@ class VoronoiData:
             return atan2(p.y - point.y, p.x - point.x)
         point.polygone = sorted(list(point_set), key=angle)
 
-
     def generate_state(self, state_generator=standart_generator):
         for cell in self._points:
             cell.state = state_generator(cell)
 
-    def update(self, rule, precalculations):
+    def bind_rule(self, rule):
+        self.__rule = rule
+
+    def bind_precalculations(self, precalculations):
+        self.__precalculations = precalculations
+
+    def update(self, rule=None, precalculations=None):
+        #  init default args
+        if rule is None:
+            rule = self.__rule
+        if precalculations is None:
+            precalculations = self.__precalculations
+
+        #  do stuff
         for precalc in precalculations:
             for cell in self._points:
                 precalc(cell)
@@ -59,8 +73,7 @@ class VoronoiData:
 
         for cell in self._points:
             cell.state = cell._new_state
-    
-    
+
     def change_closest(self, x, y):
         point = self.find_closest(x, y)
         point.state += 1
@@ -71,5 +84,3 @@ class VoronoiData:
         vect = Vect2(x, y)
         dppi = ((abs(vect - p), p) for p in self._points)
         return min(dppi, key=lambda x: x[0])[1]
-
-

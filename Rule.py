@@ -7,7 +7,7 @@ def rule(point):
 
     def iter_len(iterable):
         return sum(1 for _ in iterable)
-    
+
     red_neighbors_count = iter_len(filter(lambda x: x.state==1, neighbors))
     green_neighbors_count = iter_len(filter(lambda x: x.state==2, neighbors))
 
@@ -34,7 +34,7 @@ def rule(point):
             return 1
         else:
             return 0
-        
+
 
 
     return count%3
