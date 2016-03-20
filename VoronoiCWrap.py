@@ -1,22 +1,27 @@
 from Vector import Vect2
 
 from ctypes import cdll
-from ctypes import c_double
+from ctypes import c_float, POINTER, c_int, byref
+from ctypes import Structure
 
 from contextlib import contextmanager
 
 from math import atan2
 from random import randint
 
-from Rule import rule
-
 voronoi_lib = cdll.LoadLibrary("./libvoronoi.so")
 
+c_float_p = POINTER(c_float)
+voronoi_lib.createVoronoi.argtypes = [c_float_p, c_float_p, c_int, c_float, c_float, c_float, c_float]
 
-voronoi_lib.getLineP1X.restype = c_double
-voronoi_lib.getLineP1Y.restype = c_double
-voronoi_lib.getLineP2X.restype = c_double
-voronoi_lib.getLineP2Y.restype = c_double
+
+class Edge(Structure):
+    _fields_ = [("id1", c_int),
+                ("id2", c_int),
+                ("x1", c_float),
+                ("y1", c_float),
+                ("x2", c_float),
+                ("y2", c_float)]
 
 
 class Voronoi:
@@ -25,27 +30,21 @@ class Voronoi:
         self._lines = {}
         self._neighbors = {}
 
+        for p in self._points:
+            self._lines[p] = []
+            self._neighbors[p] = []
+
         with self.__init_voronoi(point_list) as voronoi_obj:
-            for i, point in enumerate(point_list):
-                self._lines[point] = []
-                # load lines
-                line_count = voronoi_lib.getLinesCount(voronoi_obj, i)
-                for j in range(line_count):
-                    p1x = voronoi_lib.getLineP1X(voronoi_obj, i, j)
-                    p1y = voronoi_lib.getLineP1Y(voronoi_obj, i, j)
-                    p2x = voronoi_lib.getLineP2X(voronoi_obj, i, j)
-                    p2y = voronoi_lib.getLineP2Y(voronoi_obj, i, j)
-
-                    p1 = Vect2(p1x, p1y)
-                    p2 = Vect2(p2x, p2y)
-
-                    self._lines[point].append((p1, p2))
-                # load neighbors
-                self._neighbors[point] = []
-                neighbors_count = voronoi_lib.getNeighborsCount(voronoi_obj, i)
-                for j in range(neighbors_count):
-                    neighbor_point = voronoi_lib.getNeighbor(voronoi_obj, i, j)
-                    self._neighbors[point].append(neighbor_point)
+            edge = Edge()
+            while voronoi_lib.getNextEdge(voronoi_obj, byref(edge)):
+                print(edge)
+                p1 = self._points[edge.id1]
+                p2 = self._points[edge.id2]
+                line = (Vect2(edge.x1, edge.y1), Vect2(edge.x2, edge.y2))
+                self._lines[p1].append(line)
+                self._lines[p2].append(line)
+                self._neighbors[p1].append(edge.id2)
+                self._neighbors[p2].append(edge.id1)
 
         self.__calc_points()
         self._state = {}
@@ -65,20 +64,17 @@ class Voronoi:
                 return atan2(p.y - point.y, p.x - point.x)
             self._line_points[point] = sorted(list(point_set), key=angle)
 
-    def update(self):
-        for point, n in self._neighbors.items():
-            neighbors = [self._state[p] for p in n]
-            state = self._state[point]
-            self._swap_state[point] = rule(state, neighbors)
-
-        self._swap_state, self._state = self._state, self._swap_state
-
     @contextmanager
-    def __init_voronoi(self, point_list):
+    def __init_voronoi(self, pointList):
         try:
-            arr = self.__line_list(point_list)
-            carr = (c_double * len(arr))(*arr)
-            self.voronoi_obj = voronoi_lib.generateVoronoi(carr, len(point_list))
+            xList = [p.x for p in pointList]
+            yList = [p.y for p in pointList]
+
+            xList = (c_float * len(xList))(*xList)
+            yList = (c_float * len(yList))(*yList)
+            self.voronoi_obj = voronoi_lib.createVoronoi(xList, yList,
+                                                         len(xList),
+                                                         0, 1920, 0, 1080)
             yield self.voronoi_obj
         finally:
             voronoi_lib.freeVoronoi(self.voronoi_obj)
