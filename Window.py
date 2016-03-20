@@ -32,7 +32,7 @@ class Window(QWidget):
             y = randint(PADDING, HEIGHT - PADDING)
             return Vect(x, y)
 
-        points = [point_on_screen() for _ in range(4000)]
+        points = [point_on_screen() for _ in range(8000)]
         voronoi = Voronoi(points)
         voronoi_data = VoronoiData(voronoi)
         voronoi_data.generate_state(generator)

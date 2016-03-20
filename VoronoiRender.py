@@ -63,12 +63,17 @@ class VoronoiRenderWidget(QGLWidget):
     def __init_color_cells(self):
         CellsArray = CellColor * self.__points_count
         self.__color_cells = CellsArray()
-        for i, point in enumerate(self.voronoi._points):
+
+        with_triangles = (p for p in self.voronoi._points
+                          if len(p.polygone) > 2)
+        for i, point in enumerate(with_triangles):
             self.__color_cells[i].triangleCount = len(point.polygone) - 2
             self.__color_cells[i].state = point.state
 
     def __reload_color_cells(self):
-        for i, point in enumerate(self.voronoi._points):
+        with_triangles = (p for p in self.voronoi._points
+                          if len(p.polygone) > 2)
+        for i, point in enumerate(with_triangles):
             self.__color_cells[i].state = point.state
 
     def evalute(self):
@@ -128,7 +133,7 @@ class VoronoiRenderWidget(QGLWidget):
         if self.timer.isActive():
             self.timer.stop()
         else:
-            self.timer.start(16)
+            self.timer.start(50)
 
     def mousePressEvent(self, event):
         self.voronoi.change_closest(event.x(), self.height() - event.y())
