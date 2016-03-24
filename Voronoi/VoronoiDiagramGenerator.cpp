@@ -72,8 +72,6 @@ bool VoronoiDiagramGenerator::generateVoronoi(float *xValues, float *yValues, in
 		
 	sites = (struct Site *) myalloc(nsites*sizeof( *sites));
 
-	printf("%d\n", nsites);
-
 	if(sites == 0)
 		return false;
 
@@ -84,7 +82,6 @@ bool VoronoiDiagramGenerator::generateVoronoi(float *xValues, float *yValues, in
 
 	for(i = 0; i< nsites; i++)
 	{
-		printf("%f %f\n", xValues[i], yValues[i]);
 		sites[i].coord.x = xValues[i];
 		sites[i].coord.y = yValues[i];
 		sites[i].sitenbr = i;
@@ -854,7 +851,6 @@ void VoronoiDiagramGenerator::clip_line(struct Edge *e)
 		{	y2 = pymin; x2 = (e -> c - y2)/e -> a;};
 	};
 	
-	printf("\nPushing line (%f,%f,%f,%f)",x1,y1,x2,y2);
 	line(x1,y1,x2,y2, e->reg[0]->sitenbr,e->reg[1]->sitenbr);
 }
 

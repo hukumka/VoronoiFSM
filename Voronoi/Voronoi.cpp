@@ -20,13 +20,6 @@ extern "C"{
 		g->generateVoronoi(xValues, yValues, count, \
 				minX, maxX, minY, maxY);
 		g->resetIterator();
-		VoronoiEdge edge;
-		while(g->getNext(edge.x1, edge.y1, edge.x2, edge.y2\
-				, edge.id1, edge.id2)){
-			printf("%d %d: %f %f %f %f\n", edge.id1, edge.id2, edge.x1, edge.y1, \
-				edge.x2, edge.y2);
-		}
-		g->resetIterator();
 
 		printf("Generation ended\n");
 		return g;

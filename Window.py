@@ -24,15 +24,15 @@ class Window(QWidget):
 
     def init_voronoi(self):
         def point_on_screen():
-            WIDTH = 1920
-            HEIGHT = 1080
-            PADDING = 200
+            WIDTH = 192000
+            HEIGHT = 108000
+            PADDING = 1000
 
             x = randint(PADDING, WIDTH - PADDING)
             y = randint(PADDING, HEIGHT - PADDING)
             return Vect(x, y)
 
-        points = [point_on_screen() for _ in range(100)]
+        points = [point_on_screen() for _ in range(10000)]
         voronoi = Voronoi(points)
         voronoi_data = VoronoiData(voronoi)
         voronoi_data.generate_state(generator)

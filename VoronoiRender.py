@@ -102,6 +102,7 @@ class VoronoiRenderWidget(QGLWidget):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
+        glScale(.01, .01, .01)
 
         glEnableClientState(GL_VERTEX_ARRAY)
 
@@ -136,6 +137,6 @@ class VoronoiRenderWidget(QGLWidget):
             self.timer.start(50)
 
     def mousePressEvent(self, event):
-        self.voronoi.change_closest(event.x(), self.height() - event.y())
+        self.voronoi.change_closest(event.x()*100, 100*(self.height() - event.y()))
         self.__reload_colors()
         self.update()

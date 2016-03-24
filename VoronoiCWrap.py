@@ -37,7 +37,6 @@ class Voronoi:
         with self.__init_voronoi(point_list) as voronoi_obj:
             edge = Edge()
             while voronoi_lib.getNextEdge(voronoi_obj, byref(edge)):
-                print(edge)
                 p1 = self._points[edge.id1]
                 p2 = self._points[edge.id2]
                 line = (Vect2(edge.x1, edge.y1), Vect2(edge.x2, edge.y2))
@@ -72,9 +71,10 @@ class Voronoi:
 
             xList = (c_float * len(xList))(*xList)
             yList = (c_float * len(yList))(*yList)
+            end = 1000000
             self.voronoi_obj = voronoi_lib.createVoronoi(xList, yList,
                                                          len(xList),
-                                                         0, 1920, 0, 1080)
+                                                         -end, end, -end, end)
             yield self.voronoi_obj
         finally:
             voronoi_lib.freeVoronoi(self.voronoi_obj)
