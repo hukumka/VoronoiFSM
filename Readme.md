@@ -1,4 +1,8 @@
-dependency:
-	pyqt5
-	pyqt5-opengl
-	numpy
+#dependency:
+
+pyqt5
+pyqt5-opengl
+opengl
+numpy
+g++ (for build c++ part)
+
