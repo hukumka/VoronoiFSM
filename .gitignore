@@ -1,4 +1,6 @@
 a.out
 *.so
 *.o
+voronoi.pyprof
+voronoi_prof.out
 __pycache__/*
