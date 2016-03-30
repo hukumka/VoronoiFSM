@@ -25,6 +25,9 @@ class Edge(Structure):
 
 
 class Voronoi:
+    """ Class wich generate voronoi diagram from points set
+        Adapter to C++ class
+    """
     def __init__(self, point_list):
         self._points = point_list
         self._lines = {}
@@ -34,38 +37,44 @@ class Voronoi:
             self._lines[p] = []
             self._neighbors[p] = []
 
-        with self.__init_voronoi(point_list) as voronoi_obj:
+        with self.__init_voronoi(point_list) as voronoi_obj: # calculate diagram in c++ (voronoi_obj)
+            # iterate all provided edges
             edge = Edge()
             while voronoi_lib.getNextEdge(voronoi_obj, byref(edge)):
-                p1 = self._points[edge.id1]
+                # get points near edge
+                p1 = self._points[edge.id1] 
                 p2 = self._points[edge.id2]
-                line = (Vect2(edge.x1, edge.y1), Vect2(edge.x2, edge.y2))
+                # save line, wich represent edge
+                line = (Vect2(edge.x1, edge.y1),
+                        Vect2(edge.x2, edge.y2))
                 self._lines[p1].append(line)
                 self._lines[p2].append(line)
+                # mark points near edge as neighbors
                 self._neighbors[p1].append(edge.id2)
                 self._neighbors[p2].append(edge.id1)
 
         self.__calc_points()
-        self._state = {}
-        self._swap_state = {}
-        for p, _ in self._neighbors.items():
-            self._state[p] = randint(0, 1)*randint(0, 1)
 
     def __calc_points(self):
+        """ create representation of edges as polygone """
         self._line_points = {}
         for point, lines in self._lines.items():
+            # find all points (with no repetition)
             point_set = set()
             for p1, p2 in lines:
                 point_set.add(p1)
                 point_set.add(p2)
 
+            # get ordered list of points
             def angle(p):
                 return atan2(p.y - point.y, p.x - point.x)
             self._line_points[point] = sorted(list(point_set), key=angle)
 
     @contextmanager
     def __init_voronoi(self, pointList):
+        """ manage memory of C++ object wich generate voronoi diagram"""
         try:
+            # init data and calculate diagram
             xList = [p.x for p in pointList]
             yList = [p.y for p in pointList]
 

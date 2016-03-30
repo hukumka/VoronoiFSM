@@ -6,6 +6,8 @@ from OpenGL.GLU import *  # NOQA
 from PyQt5.QtOpenGL import QGLWidget
 from itertools_recipe import pairwise_looped, pairwise
 
+from numpy import array
+
 from ctypes import Structure, c_int, c_float, cdll
 
 
@@ -54,6 +56,8 @@ class VoronoiRenderWidget(QGLWidget):
         self.__lines_count = len(lines)
         self.__points_count = len(points)
 
+        self.__vertex_buffer = array(self.__vertex_buffer, 'f')
+
         self.__init_color_cells()
         self.__init_color_vbo()
 
@@ -77,6 +81,7 @@ class VoronoiRenderWidget(QGLWidget):
             self.__color_cells[i].state = point.state
 
     def evalute(self):
+        """ used to recalculate state and update view """
         self.voronoi.update()
         self.update()
 
@@ -102,7 +107,6 @@ class VoronoiRenderWidget(QGLWidget):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        glScale(.01, .01, .01)
 
         glEnableClientState(GL_VERTEX_ARRAY)
 
@@ -137,6 +141,6 @@ class VoronoiRenderWidget(QGLWidget):
             self.timer.start(50)
 
     def mousePressEvent(self, event):
-        self.voronoi.change_closest(event.x()*100, 100*(self.height() - event.y()))
+        self.voronoi.change_closest(event.x(), (self.height() - event.y()))
         self.__reload_colors()
         self.update()

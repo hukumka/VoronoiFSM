@@ -14,14 +14,10 @@ extern "C"{
 	void* createVoronoi(float *xValues, float *yValues, int count, \
 			float minX, float maxX, float minY, float maxY){
 
-		printf("Generation started\n");
-		
 		VoronoiDiagramGenerator* g(new VoronoiDiagramGenerator);
 		g->generateVoronoi(xValues, yValues, count, \
 				minX, maxX, minY, maxY);
 		g->resetIterator();
-
-		printf("Generation ended\n");
 		return g;
 	}	
 
