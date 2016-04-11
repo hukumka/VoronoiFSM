@@ -60,12 +60,20 @@ public:
 	Voronoi(double *points, int pointsCount):
 		points(points),
 		pointsCount(pointsCount),
+        weight(pointsCount),
 		lines(pointsCount),
 		neighbors(pointsCount)
 	{
+        for(int i=0; i<pointsCount; ++i){
+            weight[i] = 1;
+        }
+        weight[0] = 100;
 		for(int i=0; i<pointsCount-1; ++i){
 			for(int j=i+1; j<pointsCount; ++j){
 				Line line;
+                separateLine(i, j, line);
+				//lines[i].push_back(line);
+				//lines[j].push_back(line);
 				if(findLine(i, j, line)){
 					// line exist
 					neighbors[i].push_back(j);
@@ -140,8 +148,8 @@ private:
 	*/
 		double LIMIT = 1e8;
 
-		double cx = (x(p1) + x(p2)) * 0.5;
-		double cy = (y(p1) + y(p2)) * 0.5;
+        //double cx = (x(p1) + x(p2))*0.5;
+        //double cy = (y(p1) + y(p2))*0.5;
 
 		// normal to line beween points
 		double directionX = y(p1) - y(p2);
@@ -151,6 +159,10 @@ private:
 		double mul = LIMIT/len;
 		directionX *= mul;
 		directionY *= mul;
+
+        double scale = 0.5*(1 + (weight[p1] - weight[p2])/len);
+		double cx = x(p1) + (x(p2) - x(p1)) *scale;
+		double cy = y(p1) + (y(p2) - y(p1)) *scale;
 
 		line.p1.x = cx - directionX;
 		line.p1.y = cy - directionY;
@@ -194,6 +206,7 @@ private:
 private:
 	int pointsCount;
 	double *points;
+    std::vector<float> weight;
 
 	std::vector<std::vector<Line> > lines;
 	std::vector<std::vector<int> > neighbors;

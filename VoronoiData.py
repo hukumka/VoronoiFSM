@@ -21,6 +21,7 @@ def standart_generator(cell):
 class VoronoiData:
     def __init__(self, voronoi):
         self._points = [Cell(i.x, i.y) for i in voronoi._points]
+        print(voronoi._points[0])
 
         for point in self._points:
             self._set_neighbors(point, voronoi)
