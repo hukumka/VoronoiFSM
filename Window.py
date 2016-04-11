@@ -33,7 +33,11 @@ class Window(QWidget):
  
         points = [point_on_screen() for _ in range(10000)]
 
+<<<<<<< HEAD
         print("Begin constructing voronoi diagram")
+=======
+        points = [point_on_screen() for _ in range(10)]
+>>>>>>> weight
         voronoi = Voronoi(points)
         print("Transfrom into graph view")
         voronoi_data = VoronoiData(voronoi)

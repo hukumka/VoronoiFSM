@@ -1,4 +1,6 @@
 from Vector import Vect2
+from itertools import repeat
+from math import atan2
 
 
 class Point(Vect2):
@@ -9,28 +11,39 @@ class Point(Vect2):
 
 class Voronoi:
 
-    def __init__(self, points):
+    def __init__(self, points, weights=None):
         self._points = points
         self._lines = {}
+        self._neighbors = {}
 
-        for p1 in points:
+        if weights is None:
+            weights = repeat(1)
+
+        pw = list(zip(points, weights))
+        print(len(pw))
+
+        for p in points:
+            self._neighbors[p] = []
+
+        for p1, w1 in pw:
             self._lines[p1] = []
-            for p2 in filter(lambda x: x is not p1, points):
-                line = self.__sep_line(p1, p2)
-                for p3 in filter(lambda x: x is not p1 and x is not p2, points):
+            self._neighbors[p1] = []
+            for i, (p2, w2) in filter(lambda x: x[1][0] is not p1, enumerate(pw)):
+                line = self.__sep_line(p1, p2, w1, w2)
+                for p3, w3 in filter(lambda x: x[0] is not p1 and x is not p2, pw):
                     if line is None:
                         break
-                    line = self.__reduce_by_halfplane(p1, self.__sep_line(p1, p3), line)
+                    line = self.__reduce_by_halfplane(p1, self.__sep_line(p1, p3, w1, w3), line)
 
                 if line is not None:
                     self._lines[p1].append(line)
-
+                    self._neighbors[p1].append(i)
 
     @staticmethod
-    def __sep_line(p1, p2):
+    def __sep_line(p1, p2, w1=1, w2=1):
         LIMIT = 1e8
-
-        center = (p1 + p2) / 2
+        
+        center = p1 + (p2-p1)*(w1/(w1+w2))
         norm = (p1 - p2).norm()
 
         return (center - norm*LIMIT, center + norm*LIMIT)

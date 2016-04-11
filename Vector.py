@@ -33,7 +33,7 @@ class Vect2:
     __itruediv__ = __truediv__
 
     def __repr__(self):
-        return "({}, {})".format(self.x, self.y)
+        return "v2({}, {})".format(self.x, self.y)
 
     def norm(self):
         return Vect2(self.y, -self.x) / abs(self)
@@ -47,8 +47,13 @@ class Vect2:
 
     def __eq__(self, other):
         accuracy = 1e-5
-        return abs(self.x - other.x) <= accuracy \
-                and abs(self.y - other.y) <= accuracy
+        return abs(self - other) <= accuracy
+
+    def __lt__(self, other):
+        if self.x == other.x:
+            return self.y <= other.y
+        else:
+            return self.x <= other.x
 
 
 

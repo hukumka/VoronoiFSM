@@ -27,6 +27,7 @@ class VoronoiData:
         voronoi - object wich has interface such as Voronoi(from Voronoi.py)
         """
         self._points = [Cell(i.x, i.y) for i in voronoi._points]
+        print(voronoi._points[0])
 
         for point in self._points:
             self.__set_neighbors(point, voronoi)
